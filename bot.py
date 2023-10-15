@@ -1,6 +1,7 @@
 # bot.py
 import os,random,json
 import discord
+import mysql.connector
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -28,12 +29,24 @@ GENERAL_CHAT = int(os.getenv('GENERAL_CHAT'))
 BANNED = int(os.getenv('BANNED'))
 ADMIN_REQUEST = int(os.getenv('ADMIN_REQUEST'))
 
-# client = discord.Client(intents=intents)
-# client._enable_debug_events = True
-
-client = commands.Bot(command_prefix='/',intents=intents)
+client = commands.Bot(command_prefix='$',intents=intents)
 
 my_guild = None
+
+mydb = mysql.connector.connect(
+  host=os.getenv('DB_HOST'),
+  user=os.getenv('DB_USER'),
+  password=os.getenv('DB_PASSWORD'),
+  database=os.getenv('DB_DATABASE')
+)
+
+cursor = mydb.cursor()
+cursor.execute("""CREATE TABLE IF NOT EXISTS DiscordProfile (
+id INT PRIMARY KEY AUTO_INCREMENT NOT NULL UNIQUE,
+discord_id INT NOT NULL UNIQUE,
+discord_name TEXT NOT NULL,
+roles TEXT NOT NULL);""")
+
 async def proccess_json_request(message):
     try:res = json.loads(message.content)
     except:return None,False
@@ -103,44 +116,44 @@ async def on_raw_reaction_add(payload):
                     embed.set_author(name=member.name, icon_url=member.display_avatar.url   )
                     embed.set_footer(text=member.guild, icon_url=member.guild.icon.url if member.guild.icon else None)
                     await member.send(embed=embed)
-@client.event
-async def on_message(message):
-    if message.webhook_id:
-        res = await proccess_json_request(message)
-        if res[0]:
-            print("Proccessed json request successfully!")
-        elif not res[1]:
-            print("Not a JSON")
-        else:
-            print("Error with request (JSON, but error)")
-    elif message.content.startswith("/"):
-        await client.process_commands(message)
-    else:
-        if message.channel.id == SAYHI:
-            member = message.author
-            print("Promoting user to : normal : ",message.author.id)
-            role_normal = message.guild.get_role(ROLE_NORMAL)
-            if not member.get_role(ROLE_NORMAL):
-                if member.get_role(ROLE_NEW):await member.remove_roles(member.get_role(ROLE_NEW))
-                await member.add_roles(role_normal)
-                await message.reply("Welcome to server man!!!\nCongragulations! You are now promoted to normal user")
-                embed=discord.Embed(title=f"Congragulations!! \n You are now promoted!\nYou can Access more channels", color=random.randint(0, 0xFFFFFF))
-                embed.set_thumbnail(url=member.display_avatar.url)
-                embed.set_author(name=member.name, icon_url=member.display_avatar.url   )
-                embed.set_footer(text=member.guild, icon_url=member.guild.icon.url if member.guild.icon else None)
-                await member.send(embed=embed)
-        elif message.channel.id == GENERAL_CHAT:
-            member = message.author
-            print("Promoting user to : normal : ",message.author.id)
-            role_normal = message.guild.get_role(ROLE_NORMAL)
-            if not member.get_role(ROLE_NORMAL):
-                if member.get_role(ROLE_NEW):await member.remove_roles(member.get_role(ROLE_NEW))
-                await member.add_roles(role_normal)
-                embed=discord.Embed(title=f"Congragulations!! \n You are now promoted!\nYou can Access more channels", color=random.randint(0, 0xFFFFFF))
-                embed.set_thumbnail(url=member.display_avatar.url)
-                embed.set_author(name=member.name, icon_url=member.display_avatar.url   )
-                embed.set_footer(text=member.guild, icon_url=member.guild.icon.url if member.guild.icon else None)
-                await member.send(embed=embed)
+# @client.event
+# async def on_message(message):
+#     if message.webhook_id:
+#         res = await proccess_json_request(message)
+#         if res[0]:
+#             print("Proccessed json request successfully!")
+#         elif not res[1]:
+#             print("Not a JSON")
+#         else:
+#             print("Error with request (JSON, but error)")
+#     elif message.content.startswith("/"):
+#         await client.process_commands(message)
+#     else:
+#         if message.channel.id == SAYHI:
+#             member = message.author
+#             print("Promoting user to : normal : ",message.author.id)
+#             role_normal = message.guild.get_role(ROLE_NORMAL)
+#             if not member.get_role(ROLE_NORMAL):
+#                 if member.get_role(ROLE_NEW):await member.remove_roles(member.get_role(ROLE_NEW))
+#                 await member.add_roles(role_normal)
+#                 await message.reply("Welcome to server man!!!\nCongragulations! You are now promoted to normal user")
+#                 embed=discord.Embed(title=f"Congragulations!! \n You are now promoted!\nYou can Access more channels", color=random.randint(0, 0xFFFFFF))
+#                 embed.set_thumbnail(url=member.display_avatar.url)
+#                 embed.set_author(name=member.name, icon_url=member.display_avatar.url   )
+#                 embed.set_footer(text=member.guild, icon_url=member.guild.icon.url if member.guild.icon else None)
+#                 await member.send(embed=embed)
+#         elif message.channel.id == GENERAL_CHAT:
+#             member = message.author
+#             print("Promoting user to : normal : ",message.author.id)
+#             role_normal = message.guild.get_role(ROLE_NORMAL)
+#             if not member.get_role(ROLE_NORMAL):
+#                 if member.get_role(ROLE_NEW):await member.remove_roles(member.get_role(ROLE_NEW))
+#                 await member.add_roles(role_normal)
+#                 embed=discord.Embed(title=f"Congragulations!! \n You are now promoted!\nYou can Access more channels", color=random.randint(0, 0xFFFFFF))
+#                 embed.set_thumbnail(url=member.display_avatar.url)
+#                 embed.set_author(name=member.name, icon_url=member.display_avatar.url   )
+#                 embed.set_footer(text=member.guild, icon_url=member.guild.icon.url if member.guild.icon else None)
+#                 await member.send(embed=embed)
         
 @client.event
 async def on_ready():
@@ -168,6 +181,16 @@ async def on_member_join(member):
 @client.command()
 async def test(ctx, arg):
     await ctx.send(arg)
+
+@client.command()
+async def sync(ctx, from_,to_):
+    print(type(from_))
+    if from_ == "discord" and to_ == "db":
+        print("Request to sync with database")
+        await ctx.reply("Successfully synced with database")
+    elif from_ == "db" and to_ == "discord":
+        print("Request to sync with discord")
+        await ctx.reply("Successfully synced with discord")
 
 
 # client.add_command(make_admin)

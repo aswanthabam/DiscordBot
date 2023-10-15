@@ -26,6 +26,10 @@ ROLE_NEW=<role new id>
 ROLE_ADMIN=<role admin id>
 ROLE_NORMAL=<role normal id>
 ROLE_BANNED=<role banned id>
+
+DB_HOST=<mysql host>
+DB_USER=<username>
+DB_PASSWORD=<password>
 ```
 
 > Dont understood this README? Yeah!! Im too bad writing docs:) Just skip reading
