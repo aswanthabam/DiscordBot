@@ -237,7 +237,7 @@ async def sync(ctx,from_:typing.Literal['database','discord'],to_:typing.Literal
                 await response.send_message("There was an error syncing with database")
                 return
         else:
-            if not update_user_role_db(str(member.id),member.name,member.roles):
+            if not update_user_role_db(str(member.id),member.roles):
                 await response.send_message("There was an error syncing with database")
                 return
         await response.send_message("Successfully synced discord role with database")
