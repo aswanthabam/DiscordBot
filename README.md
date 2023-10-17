@@ -8,6 +8,8 @@ Create a simple discord bot to manage my discord server
 - Create a channel and role threw websockets
 - detect perticular message and change role
 - administrative role add with admin permission and request
+- change role by completing simple tasks
+- administrative commands for syncing roles with database
 
 ### ENVS
 
@@ -30,6 +32,7 @@ ROLE_BANNED=<role banned id>
 DB_HOST=<mysql host>
 DB_USER=<username>
 DB_PASSWORD=<password>
+DB_DATABASE=<database name>
 ```
 
 > Dont understood this README? Yeah!! Im too bad writing docs:) Just skip reading
