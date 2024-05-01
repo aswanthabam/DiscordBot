@@ -1,4 +1,3 @@
-discord.py
-python-dotenv
-requests
-mysql-connector-python
+discord~=2.2.2
+discord.py @ git+https://github.com/Rapptz/discord.py@dc9fb1fd84914df64576264d9cf6c151e768fefb
+python-decouple==3.7
