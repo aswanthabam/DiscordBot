@@ -23,6 +23,38 @@ async def run_command_1(ctx: discord.Interaction):
     await ctx.response.send_message("PONG PONG !", ephemeral=True)
 
 
+select = discord.ui.Select(
+    options=[
+        discord.SelectOption(value='Explorer', label='Explorer'),
+        discord.SelectOption(value='Professional', label='Professional'),
+        discord.SelectOption(value='Official', label='Official'),
+        discord.SelectOption(value='Other', label='Other'),
+    ]
+)
+
+
+@bot.tree.command(name='select-role')
+async def select_role(ctx: discord.Interaction):
+    view = discord.ui.View(
+        timeout=None
+    )
+    select.callback = select_role_callback
+    view.add_item(select)
+    await ctx.response.send_message(content='Please select a role.', view=view, ephemeral=True)
+
+
+async def select_role_callback(interaction: discord.Interaction):
+    selected = select.values
+    roles: list[discord.Role] = [discord.utils.get(interaction.guild.roles, name=role)
+                                 for role in selected if
+                                 discord.utils.get(interaction.guild.roles, name=role) is not None or (
+                                         discord.utils.get(interaction.guild.roles,
+                                                           name=role) is None and await interaction.guild.create_role(
+                                     name=role))]
+    await interaction.user.add_roles(*roles)
+    await interaction.response.send_message("Updated Role")
+
+
 @bot.event
 async def on_ready():
     if not hasattr(bot, 'uptime'):
